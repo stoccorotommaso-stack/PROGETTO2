@@ -1,100 +1,138 @@
-
-
 <!DOCTYPE html>
 <html lang="it">
-
 <head>
-<meta charset="UTF-8">
-<title>Gestione Note</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Elettronico</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-
 <body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <h2>Scuola Smart</h2>
+            </div>
+            <nav class="menu">
+                <a href="#" class="active"><i class="fas fa-home"></i> Voti</a>
+                <a href="#"><i class="fas fa-calendar-alt"></i> Assenze</a>
+                <a href="#"><i class="fas fa-book"></i> Compiti</a>
+                <a href="#"><i class="fas fa-user"></i> Profilo</a>
+            </nav>
+        </aside>
+        
+        <main class="content">
+            <header class="topbar">
+                <h1>Il mio Registro</h1>
+                <div class="user-info">
+                    <span>Mario Rossi</span>
+                    <div class="avatar">MR</div>
+                </div>
+            </header>
+            
+            <div class="card-container">
+                <div class="card stat-card">
+                    <h3>Media Generale</h3>
+                    <div class="value" id="mediaVal">--</div>
+                </div>
+                <!-- Semplice form per aggiungere un nuovo voto -->
+                <div class="card stat-card" style="grid-column: span 2; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <input type="text" id="inputMateria" placeholder="Materia (es. Storia)" style="padding:8px; border-radius:6px; border:1px solid #ccc;">
+                    <input type="number" id="inputVoto" placeholder="Voto" step="0.5" style="padding:8px; border-radius:6px; border:1px solid #ccc; width:80px;">
+                    <button onclick="aggiungiVoto()" style="padding:8px 16px; border-radius:6px; background:var(--primary); color:white; border:none; cursor:pointer;">Aggiungi</button>
+                </div>
+            </div>
+            
+            <div class="card list-card">
+                <h2>Ultimi Voti</h2>
+                <table class="grades-table">
+                    <thead>
+                        <tr>
+                            <th>Materia</th>
+                            <th>Data</th>
+                            <th>Voto</th>
+                            <th>Tipo</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <!-- TABELLA VUOTA CHE SI POPOLA CON IL SERVER -->
+                    <tbody id="tabellaVoti">
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
 
-<h1>Gestione Note</h1>
+    <script>
+        const API_URL = "http://localhost:3000";
 
-<input type="text" id="noteInput" placeholder="Scrivi una nota">
+        // Funzione per capire il colore del badge
+        function getBadgeClass(voto) {
+            if (voto >= 6) return "badge good";
+            if (voto >= 5) return "badge medium";
+            return "badge bad";
+        }
 
-<button onclick="addNote()">
-Aggiungissss
-</button>
+        async function caricaVoti() {
+            const res = await fetch(API_URL + "/voti");
+            const voti = await res.json();
+            
+            const tbody = document.getElementById("tabellaVoti");
+            tbody.innerHTML = "";
+            
+            let somma = 0;
 
-<ul id="notesList"></ul>
+            voti.forEach(v => {
+                somma += v.valore;
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${v.materia}</td>
+                    <td>${v.data}</td>
+                    <td><span class="${getBadgeClass(v.valore)}">${v.valore}</span></td>
+                    <td>${v.tipo}</td>
+                    <td>
+                        <button onclick="eliminaVoto(${v.id})" style="background:var(--danger); color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
 
+            // Calcola media
+            const mediaBox = document.getElementById("mediaVal");
+            if (voti.length > 0) {
+                mediaBox.innerText = (somma / voti.length).toFixed(1);
+            } else {
+                mediaBox.innerText = "N/A";
+            }
+        }
 
-<script>
+        async function aggiungiVoto() {
+            const materia = document.getElementById("inputMateria").value;
+            const valore = document.getElementById("inputVoto").value;
 
-const API_URL = "http://localhost:3000";
+            if (!materia || !valore) return alert("Inserisci materia e voto");
 
+            await fetch(API_URL + "/voti", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ materia, valore })
+            });
 
-async function loadNotes() {
+            document.getElementById("inputMateria").value = "";
+            document.getElementById("inputVoto").value = "";
+            caricaVoti();
+        }
 
-const response = await fetch(API_URL + "/notes");
+        async function eliminaVoto(id) {
+            await fetch(API_URL + "/voti/" + id, { method: "DELETE" });
+            caricaVoti();
+        }
 
-const notes = await response.json();
-
-const list = document.getElementById("notesList");
-
-list.innerHTML = "";
-
-notes.forEach(note => {
-
-const li = document.createElement("li");
-
-li.innerHTML = `
-${note.text}
-
-<button onclick="deleteNote(${note.id})">
-Elimina
-</button>
-`;
-
-list.appendChild(li);
-});
-}
-
-
-
-async function addNote() {
-
-const input = document.getElementById("noteInput");
-
-const text = input.value;
-
-await fetch(API_URL + "/notes", {
-
-method: "POST",
-
-headers: {
-"Content-Type": "application/json"
-},
-
-body: JSON.stringify({
-text: text
-})
-
-});
-
-input.value = "";
-
-loadNotes();
-}
-
-
-
-async function deleteNote(id) {
-
-await fetch(API_URL + "/notes/" + id, {
-method: "DELETE"
-});
-
-loadNotes();
-}
-
-
-loadNotes();
-
-</script>
-
+        // Carica dati all'avvio
+        caricaVoti();
+    </script>
 </body>
-
 </html>

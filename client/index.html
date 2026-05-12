@@ -1,17 +1,47 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Gestione Note</title>
-  </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Elettronico (Sync Server)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Registro Elettronico Studente</h1>
+            <p>Connesso a server.js</p>
+        </header>
 
-  <body>
-    <h1>Gestione Note</h1>
+        <div class="dashboard">
+            <!-- Voti -->
+            <div class="card">
+                <h2>I Miei Voti</h2>
+                <div class="form-group">
+                    <select id="gradeTeacher"></select>
+                    <input type="number" id="gradeValue" placeholder="Voto (es. 8)" step="0.5">
+                    <select id="gradeType">
+                        <option value="orale">Orale</option>
+                        <option value="scritto">Scritto</option>
+                    </select>
+                    <button onclick="addGrade()">Aggiungi Voto</button>
+                </div>
+                <ul id="gradesList"></ul>
+            </div>
 
-    <input type="text" id="noteInput" placeholder="Scrivi una nota" />
+            <!-- Note -->
+            <div class="card">
+                <h2>Note Disciplinari</h2>
+                <div class="form-group">
+                    <select id="noteTeacher"></select>
+                    <input type="text" id="noteText" placeholder="Motivazione nota">
+                    <button onclick="addNote()">Aggiungi Nota</button>
+                </div>
+                <ul id="notesList"></ul>
+            </div>
+        </div>
+    </div>
 
-    <button onclick="addNote()">Aggiungissss</button>
-
-    <ul id="notesList"></ul>
-  </body>
+    <script src="script.js"></script>
+</body>
 </html>

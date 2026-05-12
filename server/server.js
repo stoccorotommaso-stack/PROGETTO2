@@ -1,14 +1,50 @@
-const express = require('express');
-const path = require('path');
+const express = require("express");
+const cors = require("cors");
+
 const app = express();
-const port = 3000;
 
-app.use(express.static(__dirname));
+app.use(cors());
+app.use(express.json());
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+let notes = [
+{ id: 1, text: "Prima notassssss" },
+{ id: 2, text: "Seconda nota e bastaaaaaasecondo" },
+{ id: 3, text: "terza" }
+];
+
+
+// GET -> ottiene tutte le note
+app.get("/notes", (req, res) => {
+res.json(notes);
 });
 
-app.listen(port, () => {
-    console.log(`Server Express in ascolto su http://localhost:${port}`);
+
+// POST -> aggiunge una nota
+app.post("/notes", (req, res) => {
+const newNote = {
+id: notes.length + 1,
+text: req.body.text
+};
+
+notes.push(newNote);
+
+res.json(newNote);
+});
+
+
+// DELETE -> elimina una nota
+app.delete("/notes/:id", (req, res) => {
+
+const id = parseInt(req.params.id);
+
+notes = notes.filter(note => note.id !== id);
+
+res.json({
+message: "Nota eliminata"
+});
+});
+
+
+app.listen(3000, () => {
+console.log("Server avviato su http://localhost:3000&quot;);
 });
